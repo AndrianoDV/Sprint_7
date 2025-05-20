@@ -34,6 +34,7 @@ src/main/resources/
 /.nb-gradle/
 build/
 .build/
+
 /.build/
 !**/src/main/**/build/
 !**/src/test/**/build/
