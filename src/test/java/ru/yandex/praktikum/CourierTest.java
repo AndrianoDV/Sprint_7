@@ -1,109 +1,100 @@
 package ru.yandex.praktikum;
 
-import io.qameta.allure.Step;
+import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import org.apache.http.HttpStatus;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import ru.yandex.praktikum.model.CourierModel;
 import ru.yandex.praktikum.steps.CourierSteps;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.Matchers.is;
 
 public class CourierTest {
-    String loginCourier;
-    String passwordCourier;
-    String firstNameCourier;
+    private String loginCourier;
+    private String passwordCourier;
+    private String firstNameCourier;
+    private CourierModel courierModel;
+    private final CourierSteps courierSteps = new CourierSteps();
 
-    private CourierSteps courier = new CourierSteps();
-
-    @Test
-    @DisplayName("Создание курьера с заполнением всех полей")
-    @Step("Создание курьера")
-    public void createCourierTrue() {
+    @Before
+    public void setUp() {
         loginCourier = randomAlphabetic(12);
         passwordCourier = randomAlphabetic(10);
         firstNameCourier = randomAlphabetic(8);
+        courierModel = new CourierModel(loginCourier, passwordCourier, firstNameCourier);
+    }
 
-        courier
-                .createCourier(loginCourier, passwordCourier, firstNameCourier)
+    @Test
+    @DisplayName("Создание курьера с заполнением всех полей")
+    @Description("Проверка успешного создания курьера при заполнении всех полей")
+    public void createCourierWithAllFieldsTest() {
+        courierSteps.createCourier(courierModel)
                 .then()
-                .statusCode(201)
+                .statusCode(HttpStatus.SC_CREATED)
                 .body("ok", is(true));
     }
 
     @Test
     @DisplayName("Создание курьера только с заполнением обязательных полей")
-    @Step("Создание курьера")
-    public void createCourierTrueWithoutFirstName() {
-        loginCourier = randomAlphabetic(12);
-        passwordCourier = randomAlphabetic(10);
-
-        courier
-                .createCourier(loginCourier, passwordCourier, "")
+    @Description("Проверка успешного создания курьера при заполнении только обязательных полей (логин и пароль)")
+    public void createCourierWithRequiredFieldsOnlyTest() {
+        CourierModel requiredFieldsOnly = new CourierModel(loginCourier, passwordCourier, "");
+        courierSteps.createCourier(requiredFieldsOnly)
                 .then()
-                .statusCode(201)
+                .statusCode(HttpStatus.SC_CREATED)
                 .body("ok", is(true));
     }
 
     @Test
     @DisplayName("Невозможность создания курьера без логина")
-    @Step("Попытка создания курьера")
-    public void createCourierFalseWithoutLogin() {
-        passwordCourier = randomAlphabetic(10);
-        firstNameCourier = randomAlphabetic(8);
-
-        courier
-                .createCourier("", passwordCourier, firstNameCourier)
+    @Description("Проверка ошибки при попытке создания курьера без указания логина")
+    public void createCourierWithoutLoginTest() {
+        CourierModel noLoginCourier = new CourierModel("", passwordCourier, firstNameCourier);
+        courierSteps.createCourier(noLoginCourier)
                 .then()
-                .statusCode(400)
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body("message", is("Недостаточно данных для создания учетной записи"));
     }
 
     @Test
     @DisplayName("Невозможность создания курьера без пароля")
-    @Step("Попытка создания курьера")
-    public void createCourierFalseWithoutPassword() {
-        loginCourier = randomAlphabetic(12);
-        firstNameCourier = randomAlphabetic(8);
-
-        courier
-                .createCourier(loginCourier, "", firstNameCourier)
+    @Description("Проверка ошибки при попытке создания курьера без указания пароля")
+    public void createCourierWithoutPasswordTest() {
+        CourierModel noPasswordCourier = new CourierModel(loginCourier, "", firstNameCourier);
+        courierSteps.createCourier(noPasswordCourier)
                 .then()
-                .statusCode(400)
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body("message", is("Недостаточно данных для создания учетной записи"));
     }
 
     @Test
     @DisplayName("Невозможность создания двух курьеров с одинаковым логином")
-    @Step("Попытка создания курьера")
-    public void createDoubleCourierFalse() {
-        loginCourier = randomAlphabetic(12);
-        passwordCourier = randomAlphabetic(10);
-        firstNameCourier = randomAlphabetic(8);
-
-        // Создадим курьера первый раз
-        courier
-                .createCourier(loginCourier, passwordCourier, firstNameCourier)
+    @Description("Проверка ошибки при попытке создания дубликата курьера с существующим логином")
+    public void createDuplicateCourierTest() {
+        // First creation - should succeed
+        courierSteps.createCourier(courierModel)
                 .then()
-                .statusCode(201)
+                .statusCode(HttpStatus.SC_CREATED)
                 .body("ok", is(true));
 
-        // Попробуем создать дубликат
-        courier
-                .createCourier(loginCourier, passwordCourier, firstNameCourier)
+        // Attempt to create duplicate - should fail
+        courierSteps.createCourier(courierModel)
                 .then()
-                .statusCode(409)
+                .statusCode(HttpStatus.SC_CONFLICT)
                 .body("message", is("Этот логин уже используется"));
     }
 
     @After
-    public void dataCleaning() {
-        Integer idCourier = courier.loginCourier(loginCourier, passwordCourier)
+    public void tearDown() {
+        Integer idCourier = courierSteps.loginCourier(courierModel)
                 .extract()
                 .body()
                 .path("id");
         if (idCourier != null) {
-            courier.deleteCourier(idCourier.toString());
+            courierSteps.deleteCourier(idCourier.toString());
         }
     }
 }

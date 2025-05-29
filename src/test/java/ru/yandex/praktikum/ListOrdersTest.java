@@ -1,27 +1,22 @@
 package ru.yandex.praktikum;
 
-import io.qameta.allure.Step;
+import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.http.ContentType;
+import org.apache.http.HttpStatus;
 import org.junit.Test;
+import ru.yandex.praktikum.steps.OrderSteps;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class ListOrdersTest {
-    public final String BASE_URI = "https://qa-scooter.praktikum-services.ru";
-    public final String GET_ORDERS = "/api/v1/orders";
+    private final OrderSteps orderSteps = new OrderSteps();
 
     @Test
     @DisplayName("Запрос на получение списка заказов")
-    @Step("Получение списка заказов")
-    public void getListOrders() {
-        given()
-                .contentType(ContentType.JSON)
-                .baseUri(BASE_URI)
-                .get(GET_ORDERS)
-                .then()
-                .statusCode(200)
+    @Description("Проверка успешного получения списка заказов с валидными данными")
+    public void getListOrdersTest() {
+        orderSteps.getOrdersList()
+                .statusCode(HttpStatus.SC_OK)
                 .body("orders", notNullValue());
     }
 }
