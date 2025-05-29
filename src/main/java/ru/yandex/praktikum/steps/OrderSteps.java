@@ -49,13 +49,13 @@ public class OrderSteps {
     private String buildOrderRequestBody(String[] colors) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-        sb.append("\"firstName\": \"Иван\",");
-        sb.append("\"lastName\": \"Иванов\",");
-        sb.append("\"address\": \"Москва, ул. Пушкина, д. 10\",");
+        sb.append("\"firstName\": \"Андрей\",");
+        sb.append("\"lastName\": \"Дементьев\",");
+        sb.append("\"address\": \"Пенза, ул. Пушкина, д. 12\",");
         sb.append("\"metroStation\": 4,");
-        sb.append("\"phone\": \"+7 999 123 45 67\",");
+        sb.append("\"phone\": \"+7 900 123 45 67\",");
         sb.append("\"rentTime\": 5,");
-        sb.append("\"deliveryDate\": \"2023-12-31\",");
+        sb.append("\"deliveryDate\": \"2025-11-31\",");
         sb.append("\"comment\": \"Тестовый заказ\",");
 
         if (colors != null && colors.length > 0) {

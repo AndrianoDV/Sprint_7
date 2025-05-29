@@ -74,17 +74,17 @@ public class CourierTest {
     @DisplayName("Невозможность создания двух курьеров с одинаковым логином")
     @Description("Проверка ошибки при попытке создания дубликата курьера с существующим логином")
     public void createDuplicateCourierTest() {
-        // First creation - should succeed
+
         courierSteps.createCourier(courierModel)
                 .then()
                 .statusCode(HttpStatus.SC_CREATED)
                 .body("ok", is(true));
 
-        // Attempt to create duplicate - should fail
+
         courierSteps.createCourier(courierModel)
                 .then()
                 .statusCode(HttpStatus.SC_CONFLICT)
-                .body("message", is("Этот логин уже используется"));
+                .body("message", is("Этот логин уже используется. Попробуйте другой."));
     }
 
     @After
