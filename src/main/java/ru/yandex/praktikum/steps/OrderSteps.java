@@ -3,6 +3,7 @@ package ru.yandex.praktikum.steps;
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
+import ru.yandex.praktikum.model.OrderModel;
 
 import static io.restassured.RestAssured.given;
 
@@ -24,11 +25,22 @@ public class OrderSteps {
 
     @Step("Создание заказа с цветами: {colors}")
     public ValidatableResponse createOrder(String[] colors) {
-        String requestBody = buildOrderRequestBody(colors);
+        OrderModel order = new OrderModel(
+                "Андрей",
+                "Дементьев",
+                "Пенза, ул. Пушкина, д. 12",
+                4,
+                "+7 900 123 45 67",
+                5,
+                "2025-11-30",  // Fixed invalid date (November has 30 days)
+                "Тестовый заказ",
+                colors
+        );
+
         return given()
                 .contentType(ContentType.JSON)
                 .baseUri(BASE_URI)
-                .body(requestBody)
+                .body(order)  // Automatic serialization here
                 .when()
                 .post(CREATE_ORDER)
                 .then();
@@ -44,32 +56,5 @@ public class OrderSteps {
                 .put(CANCEL_ORDER)
                 .then()
                 .statusCode(200);
-    }
-
-    private String buildOrderRequestBody(String[] colors) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        sb.append("\"firstName\": \"Андрей\",");
-        sb.append("\"lastName\": \"Дементьев\",");
-        sb.append("\"address\": \"Пенза, ул. Пушкина, д. 12\",");
-        sb.append("\"metroStation\": 4,");
-        sb.append("\"phone\": \"+7 900 123 45 67\",");
-        sb.append("\"rentTime\": 5,");
-        sb.append("\"deliveryDate\": \"2025-11-31\",");
-        sb.append("\"comment\": \"Тестовый заказ\",");
-
-        if (colors != null && colors.length > 0) {
-            sb.append("\"color\": [");
-            for (int i = 0; i < colors.length; i++) {
-                sb.append("\"").append(colors[i]).append("\"");
-                if (i < colors.length - 1) {
-                    sb.append(",");
-                }
-            }
-            sb.append("]");
-        }
-        sb.append("}");
-
-        return sb.toString();
     }
 }
